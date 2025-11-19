@@ -1,0 +1,30 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/app/nocobase/storage/logs/main/.96457f60292712231c194aaad6fc697943aabcff-audit.json",
+    "files": [
+        {
+            "date": 1763196456788,
+            "name": "/app/nocobase/storage/logs/main/system_error_2025-11-15.log",
+            "hash": "2721b8e90ca031806ae1b1772bbaaaff473ebc4c3ef8d1a16f885ece46ad166d"
+        },
+        {
+            "date": 1763263164714,
+            "name": "/app/nocobase/storage/logs/main/system_error_2025-11-16.log",
+            "hash": "ae1cd97cef89898b38a461cbdd8320d142cfba6417a3e3d91ba0bb6d1bd69596"
+        },
+        {
+            "date": 1763310845105,
+            "name": "/app/nocobase/storage/logs/main/system_error_2025-11-17.log",
+            "hash": "53f2d843d8224d9d42436e93c9834d8db59addcb38bd3e96e25bbd95bd199f3b"
+        },
+        {
+            "date": 1763528466107,
+            "name": "/app/nocobase/storage/logs/main/system_error_2025-11-19.log",
+            "hash": "a4ca3a51746367d284002f9d298171138e85e98fa378d7339afe4fa9a439ac3c"
+        }
+    ],
+    "hashType": "sha256"
+}

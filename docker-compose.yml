@@ -1,58 +1,56 @@
-services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: nocobase-postgres-22001
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - nocobase_network
-    ports:
-      - "0.0.0.0:22010:5432"
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    container_name: nocobase-redis-22001
-    command: redis-server --requirepass ${REDIS_PASSWORD}
-    networks:
-      - nocobase_network
-    restart: unless-stopped
-
-  nocobase:
-    image: docker.io/nocobase/nocobase:2.0.0-alpha.41
-    container_name: nocobase-app-22001
-    environment:
-      - DB_DIALECT=postgres
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_DATABASE=${POSTGRES_DB}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - CACHE_DEFAULT_STORE=memory
-      - INIT_ROOT_EMAIL=${SERVICE_ADMIN_ID}
-      - INIT_ROOT_PASSWORD=${SERVICE_ADMIN_PASSWORD}
-      - INIT_ROOT_NICKNAME=Admin
-      - APP_KEY=${APP_KEY}
-    ports:
-      - "0.0.0.0:22001:80"
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - nocobase_network
-    volumes:
-      - nocobase_storage:/app/storage
-      - ./nocobase-src:/app/nocobase
-    restart: unless-stopped
-
-volumes:
-  postgres_data:
-  nocobase_storage:
+# Docker Compose file for NocoBase 2.0
 
 networks:
-  nocobase_network:
+  nocobase:
     driver: bridge
+
+services:
+  app:
+    image: nocobase/nocobase:2.0.0-alpha.39
+    restart: always
+    networks:
+      - nocobase
+    depends_on:
+      - postgres
+    environment:
+      # The application's secret key, used to generate user tokens, etc.
+      # If APP_KEY is changed, old tokens will also become invalid.
+      # It can be any random string, and make sure it is not exposed.
+      - APP_KEY=${APP_KEY:-nocobase-secret-key-22001}
+      # Database type, supports postgres, mysql, mariadb
+      - DB_DIALECT=postgres
+      # Database host, can be replaced with the IP of an existing database server
+      - DB_HOST=postgres
+      # Database port
+      - DB_PORT=5432
+      # Database name
+      - DB_DATABASE=nocobase
+      # Database user
+      - DB_USER=nocobase
+      # Database password
+      - DB_PASSWORD=nocobase
+      # Timezone
+      - TZ=Asia/Seoul
+      # Service platform username and password,
+      # used for automatically downloading and updating plugins.
+      - NOCOBASE_PKG_USERNAME=
+      - NOCOBASE_PKG_PASSWORD=
+    volumes:
+      - ./storage:/app/nocobase/storage
+    ports:
+      - '${PORT:-22001}:80'
+    # init: true
+
+  # If using an existing database server, postgres service can be omitted
+  postgres:
+    image: postgres:16
+    restart: always
+    command: postgres -c wal_level=logical
+    environment:
+      POSTGRES_USER: nocobase
+      POSTGRES_DB: nocobase
+      POSTGRES_PASSWORD: nocobase
+    volumes:
+      - ./storage/db/postgres:/var/lib/postgresql/data
+    networks:
+      - nocobase

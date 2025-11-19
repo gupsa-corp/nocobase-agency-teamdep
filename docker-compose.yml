@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: nocobase-postgres-22001
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nocobase_network
+    ports:
+      - "0.0.0.0:22010:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: nocobase-redis-22001
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    networks:
+      - nocobase_network
+    restart: unless-stopped
+
+  nocobase:
+    image: docker.io/nocobase/nocobase:2.0.0-alpha.41
+    container_name: nocobase-app-22001
+    environment:
+      - DB_DIALECT=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - CACHE_DEFAULT_STORE=memory
+      - INIT_ROOT_EMAIL=${SERVICE_ADMIN_ID}
+      - INIT_ROOT_PASSWORD=${SERVICE_ADMIN_PASSWORD}
+      - INIT_ROOT_NICKNAME=Admin
+      - APP_KEY=${APP_KEY}
+    ports:
+      - "0.0.0.0:22001:80"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - nocobase_network
+    volumes:
+      - nocobase_storage:/app/storage
+      - ./nocobase-src:/app/nocobase
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  nocobase_storage:
+
+networks:
+  nocobase_network:
+    driver: bridge
